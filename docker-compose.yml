@@ -1,0 +1,51 @@
+services:
+
+  # ============================================================
+  # BACKEND - Spring Boot
+  # ============================================================
+
+  backend:
+    container_name: sparknote-backend
+
+    image: ${BACKEND_IMAGE}:${IMAGE_TAG}
+
+    ports:
+      - "5000:8080"
+
+    env_file:
+      - ./BlogApplication/.env
+
+    restart: unless-stopped
+
+    networks:
+      - sparknote-network
+
+
+  # ============================================================
+  # FRONTEND - React + Nginx
+  # ============================================================
+
+  frontend:
+    container_name: sparknote-frontend
+
+    image: ${FRONTEND_IMAGE}:${IMAGE_TAG}
+
+    ports:
+      - "3000:80"
+
+    depends_on:
+      - backend
+
+    restart: unless-stopped
+
+    networks:
+      - sparknote-network
+
+
+# ============================================================
+# NETWORK
+# ============================================================
+
+networks:
+  sparknote-network:
+    driver: bridge
