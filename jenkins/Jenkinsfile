@@ -457,12 +457,52 @@ pipeline {
         //
         //
         stage('🏗️ Build Application') {
+            stages {
                 stage('Build Frontend') {
                     steps {
                         customLog('Building frontend...')
-                        frontendBuild('client')
+                        frontendBuild('frontend')
                     }
                 }
+
+                stage('Build Backend') {
+                    steps {
+                        dir('BlogApplication') {
+                            customLog('Building Spring Boot backend...')
+
+                            withCredentials([
+                        file(
+                            credentialsId: 'blogapplication-env',
+                            variable: 'ENV_FILE'
+                        )
+                    ]) {
+                                bat '''
+                                    echo ========================================
+                                    echo Creating Spring Boot environment file
+                                    echo ========================================
+
+                                    copy /Y "%ENV_FILE%" ".env"
+
+                                    echo.
+                                    echo ========================================
+                                     echo Building Spring Boot application
+                                    echo ========================================
+
+                                    mvn package -DskipTests
+
+                                    if not exist "target\\BlogApplication-0.0.1-SNAPSHOT.jar" (
+                                        echo ERROR: Spring Boot JAR was not created
+                                        exit /b 1
+                                    )
+
+                                    echo.
+                                    echo [OK] Spring Boot JAR created successfully
+                            '''
+                         }
+                        }
+                    }
+                }
+            }
         }
         stage('🔑 Docker Login') {
             steps {
