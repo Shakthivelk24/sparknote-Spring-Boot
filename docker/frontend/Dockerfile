@@ -15,7 +15,8 @@ WORKDIR /app
 # Copy package files FIRST (before source code)
 # Docker caches each layer. If package.json doesn't change,
 # the npm install layer is reused - dramatically speeds up builds
-COPY Blogging-website-using-Spring-Boot/frontend/package.json Blogging-website-using-Spring-Boot/frontend/package-lock.json ./
+COPY frontend/package.json frontend/package-lock.json ./
+
 
 # Install dependencies
 # --ci: uses package-lock.json exactly (reproducible builds)
@@ -24,7 +25,7 @@ RUN npm ci
 
 # Copy the rest of the frontend source code
 # Done AFTER npm install so code changes don't invalidate the npm cache layer
-COPY Blogging-website-using-Spring-Boot/frontend/ .
+COPY frontend/ .
 
 # Set build-time environment variable for API URL
 # This bakes the backend URL into the React bundle at compile time
