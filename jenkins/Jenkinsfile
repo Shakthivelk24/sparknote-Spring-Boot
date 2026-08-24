@@ -589,10 +589,28 @@ pipeline {
                 }
             }
         }
-                // ====================================================
+        stage('📝 Create .env File') {
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'blogapplication-env-doc', variable: 'ENV_FILE')]) {
+                        if (isUnix()) {
+                            sh '''
+                              cp "$ENV_FILE" BlogApplication/.env
+                            '''
+                        } else {
+                            bat '''
+                              copy "%ENV_FILE%" "BlogApplication\\.env"
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+        // ====================================================
         // Stage 15: Deploy Application
         // Deploy the application using Docker Compose
         // ====================================================
+
         stage('Deploy') {
             steps {
                 script {
