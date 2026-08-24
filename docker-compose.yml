@@ -10,7 +10,7 @@ services:
     image: ${BACKEND_IMAGE}:${IMAGE_TAG}
 
     ports:
-      - "5000:8080"
+      - "5000:8083"
 
     env_file:
       - ./BlogApplication/.env
