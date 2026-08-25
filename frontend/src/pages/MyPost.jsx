@@ -31,26 +31,30 @@ export default function MyPost() {
 
   useEffect(() => {
 
-    // No server URL
-    if (!serverUrl) {
-
-      setLoading(false);
-
-      return;
-    }
-
-
     const fetchUserPosts = async () => {
 
       try {
 
         setLoading(true);
 
+        const url =
+          `${serverUrl}/api/posts/user`;
+
+        console.log(
+          "Fetching user posts:",
+          url
+        );
+
         const res = await axios.get(
-          `${serverUrl}/api/posts/user`,
+          url,
           {
             withCredentials: true
           }
+        );
+
+        console.log(
+          "User posts response:",
+          res.data
         );
 
         setPosts(
@@ -61,8 +65,9 @@ export default function MyPost() {
 
       } catch (error) {
 
-        console.log(
+        console.error(
           "Error loading user posts:",
+          error.response?.status,
           error.response?.data ||
           error.message
         );
@@ -77,6 +82,14 @@ export default function MyPost() {
     };
 
 
+    // IMPORTANT:
+    // Do not check:
+    // if (serverUrl)
+    //
+    // serverUrl is "" in Docker.
+    // The request should still be made to:
+    // /api/posts/user
+
     fetchUserPosts();
 
   }, [serverUrl]);
@@ -89,9 +102,11 @@ export default function MyPost() {
   if (loading) {
 
     return (
+
       <p className="text-center mt-5">
         Loading...
       </p>
+
     );
 
   }
@@ -128,4 +143,5 @@ export default function MyPost() {
     </div>
 
   );
+
 }
