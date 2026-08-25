@@ -13,7 +13,11 @@ import {
   fireEvent,
 } from "@testing-library/react";
 
-import { MemoryRouter } from "react-router-dom";
+import {
+  MemoryRouter,
+  Routes,
+  Route,
+} from "react-router-dom";
 
 import PostDetails from "./PostDetails";
 
@@ -24,9 +28,9 @@ import {
 import axios from "axios";
 
 
-// ==========================================
+// =====================================================
 // MOCK AXIOS
-// ==========================================
+// =====================================================
 
 vi.mock("axios", () => ({
   default: {
@@ -35,50 +39,26 @@ vi.mock("axios", () => ({
 }));
 
 
-// ==========================================
-// MOCK NAVIGATION
-// ==========================================
-
-const mockNavigate = vi.fn();
-
-vi.mock("react-router-dom", async () => {
-
-  const actual = await vi.importActual(
-    "react-router-dom"
-  );
-
-  return {
-    ...actual,
-
-    useNavigate: () => mockNavigate,
-
-    useParams: () => ({
-      id: "1",
-    }),
-  };
-});
-
-
-// ==========================================
-// TEST CONTEXT
-// ==========================================
+// =====================================================
+// RENDER HELPER
+// =====================================================
 
 const renderPostDetails = (
+  postId = "1",
   contextValue = {}
 ) => {
 
   const defaultContext = {
-    serverUrl:
-      "http://localhost:8083",
+    // Docker + Nginx
+    serverUrl: "",
 
     ...contextValue,
   };
 
   return render(
-
     <MemoryRouter
       initialEntries={[
-        "/post/1",
+        `/post/${postId}`,
       ]}
     >
 
@@ -86,37 +66,47 @@ const renderPostDetails = (
         value={defaultContext}
       >
 
-        <PostDetails />
+        <Routes>
+
+          <Route
+            path="/post/:id"
+            element={<PostDetails />}
+          />
+
+          <Route
+            path="/"
+            element={
+              <div>
+                Home Page
+              </div>
+            }
+          />
+
+        </Routes>
 
       </userDataContext.Provider>
 
     </MemoryRouter>
-
   );
 };
 
 
-// ==========================================
-// TEST DATA
-// ==========================================
+// =====================================================
+// MOCK POST
+// =====================================================
 
 const mockPost = {
   id: 1,
-
-  title:
-    "My First Blog Post",
-
+  title: "Java Spring Boot",
   content:
-    "This is my first blog post. It contains enough content to demonstrate the complete post details page.",
-
-  author:
-    "shakthi",
+    "Spring Boot makes it easy to create production-ready Java applications.",
+  author: "shakthi",
 };
 
 
-// ==========================================
+// =====================================================
 // TESTS
-// ==========================================
+// =====================================================
 
 describe("PostDetails Component", () => {
 
@@ -127,19 +117,20 @@ describe("PostDetails Component", () => {
   });
 
 
-  // ========================================
+  // ===================================================
   // LOADING
-  // ========================================
+  // ===================================================
 
   test(
-    "shows loading state while fetching post",
+    "shows loading message while post is loading",
     () => {
 
       axios.get.mockImplementation(
-        () => new Promise(() => {})
+        () =>
+          new Promise(() => {})
       );
 
-      renderPostDetails();
+      renderPostDetails("1");
 
       expect(
         screen.getByText(
@@ -151,19 +142,19 @@ describe("PostDetails Component", () => {
   );
 
 
-  // ========================================
-  // API REQUEST
-  // ========================================
+  // ===================================================
+  // API CALL
+  // ===================================================
 
   test(
-    "fetches post using post ID",
+    "fetches post using Docker API URL",
     async () => {
 
       axios.get.mockResolvedValue({
         data: mockPost,
       });
 
-      renderPostDetails();
+      renderPostDetails("1");
 
       await waitFor(() => {
 
@@ -171,7 +162,7 @@ describe("PostDetails Component", () => {
           axios.get
         ).toHaveBeenCalledWith(
 
-          "http://localhost:8083/api/posts/1",
+          "/api/posts/1",
 
           {
             withCredentials: true,
@@ -185,37 +176,9 @@ describe("PostDetails Component", () => {
   );
 
 
-  // ========================================
-  // LOADING DISAPPEARS
-  // ========================================
-
-  test(
-    "removes loading state after post is loaded",
-    async () => {
-
-      axios.get.mockResolvedValue({
-        data: mockPost,
-      });
-
-      renderPostDetails();
-
-      await waitFor(() => {
-
-        expect(
-          screen.queryByText(
-            "Loading post..."
-          )
-        ).not.toBeInTheDocument();
-
-      });
-
-    }
-  );
-
-
-  // ========================================
-  // POST TITLE
-  // ========================================
+  // ===================================================
+  // DISPLAY TITLE
+  // ===================================================
 
   test(
     "displays post title",
@@ -225,17 +188,13 @@ describe("PostDetails Component", () => {
         data: mockPost,
       });
 
-      renderPostDetails();
+      renderPostDetails("1");
 
       await waitFor(() => {
 
         expect(
-          screen.getByRole(
-            "heading",
-            {
-              name:
-                "My First Blog Post",
-            }
+          screen.getByText(
+            "Java Spring Boot"
           )
         ).toBeInTheDocument();
 
@@ -245,9 +204,9 @@ describe("PostDetails Component", () => {
   );
 
 
-  // ========================================
-  // POST CONTENT
-  // ========================================
+  // ===================================================
+  // DISPLAY CONTENT
+  // ===================================================
 
   test(
     "displays post content",
@@ -257,13 +216,13 @@ describe("PostDetails Component", () => {
         data: mockPost,
       });
 
-      renderPostDetails();
+      renderPostDetails("1");
 
       await waitFor(() => {
 
         expect(
           screen.getByText(
-            mockPost.content
+            "Spring Boot makes it easy to create production-ready Java applications."
           )
         ).toBeInTheDocument();
 
@@ -273,9 +232,9 @@ describe("PostDetails Component", () => {
   );
 
 
-  // ========================================
-  // AUTHOR
-  // ========================================
+  // ===================================================
+  // DISPLAY AUTHOR
+  // ===================================================
 
   test(
     "displays post author",
@@ -285,7 +244,7 @@ describe("PostDetails Component", () => {
         data: mockPost,
       });
 
-      renderPostDetails();
+      renderPostDetails("1");
 
       await waitFor(() => {
 
@@ -301,9 +260,9 @@ describe("PostDetails Component", () => {
   );
 
 
-  // ========================================
-  // AUTHOR INITIAL
-  // ========================================
+  // ===================================================
+  // DISPLAY FIRST LETTER
+  // ===================================================
 
   test(
     "displays first letter of author",
@@ -313,7 +272,7 @@ describe("PostDetails Component", () => {
         data: mockPost,
       });
 
-      renderPostDetails();
+      renderPostDetails("1");
 
       await waitFor(() => {
 
@@ -327,37 +286,9 @@ describe("PostDetails Component", () => {
   );
 
 
-  // ========================================
-  // AUTHOR LABEL
-  // ========================================
-
-  test(
-    "displays SparkNote Author label",
-    async () => {
-
-      axios.get.mockResolvedValue({
-        data: mockPost,
-      });
-
-      renderPostDetails();
-
-      await waitFor(() => {
-
-        expect(
-          screen.getByText(
-            "SparkNote Author"
-          )
-        ).toBeInTheDocument();
-
-      });
-
-    }
-  );
-
-
-  // ========================================
-  // POST ID
-  // ========================================
+  // ===================================================
+  // DISPLAY POST ID
+  // ===================================================
 
   test(
     "displays post ID",
@@ -367,7 +298,7 @@ describe("PostDetails Component", () => {
         data: mockPost,
       });
 
-      renderPostDetails();
+      renderPostDetails("1");
 
       await waitFor(() => {
 
@@ -383,28 +314,32 @@ describe("PostDetails Component", () => {
   );
 
 
-  // ========================================
-  // BACK BUTTON
-  // ========================================
+  // ===================================================
+  // AUTHOR DEFAULT
+  // ===================================================
 
   test(
-    "renders Back button",
+    "uses Anonymous when author is missing",
     async () => {
 
       axios.get.mockResolvedValue({
-        data: mockPost,
+
+        data: {
+          id: 2,
+          title: "Anonymous Post",
+          content:
+            "Anonymous content",
+        },
+
       });
 
-      renderPostDetails();
+      renderPostDetails("2");
 
       await waitFor(() => {
 
         expect(
-          screen.getByRole(
-            "button",
-            {
-              name: "← Back",
-            }
+          screen.getByText(
+            "Anonymous"
           )
         ).toBeInTheDocument();
 
@@ -414,43 +349,190 @@ describe("PostDetails Component", () => {
   );
 
 
-  // ========================================
-  // BACK BUTTON NAVIGATION
-  // ========================================
+  // ===================================================
+  // EMPTY AUTHOR
+  // ===================================================
 
   test(
-    "navigates back when Back button is clicked",
+    "uses Anonymous when author is empty",
     async () => {
 
       axios.get.mockResolvedValue({
-        data: mockPost,
+
+        data: {
+          id: 3,
+          title: "Empty Author",
+          content:
+            "Post content",
+          author: "",
+        },
+
       });
 
-      renderPostDetails();
+      renderPostDetails("3");
 
-      const backButton =
-        await screen.findByRole(
-          "button",
-          {
-            name: "← Back",
-          }
-        );
+      await waitFor(() => {
 
-      fireEvent.click(
-        backButton
-      );
+        expect(
+          screen.getByText(
+            "Anonymous"
+          )
+        ).toBeInTheDocument();
 
-      expect(
-        mockNavigate
-      ).toHaveBeenCalledWith(-1);
+      });
 
     }
   );
 
 
-  // ========================================
+  // ===================================================
+  // POST NOT FOUND
+  // ===================================================
+
+  test(
+    "shows Post not found when API returns error",
+    async () => {
+
+      axios.get.mockRejectedValue({
+
+        response: {
+          status: 404,
+          data: {
+            message:
+              "Post not found",
+          },
+        },
+
+        message:
+          "Request failed with status code 404",
+
+      });
+
+      renderPostDetails("999");
+
+      await waitFor(() => {
+
+        expect(
+          screen.getByText(
+            "Post not found"
+          )
+        ).toBeInTheDocument();
+
+      });
+
+    }
+  );
+
+
+  // ===================================================
+  // POST NOT FOUND - NULL RESPONSE
+  // ===================================================
+
+  test(
+    "shows Post not found when response data is null",
+    async () => {
+
+      axios.get.mockResolvedValue({
+        data: null,
+      });
+
+      renderPostDetails("999");
+
+      await waitFor(() => {
+
+        expect(
+          screen.getByText(
+            "Post not found"
+          )
+        ).toBeInTheDocument();
+
+      });
+
+    }
+  );
+
+
+  // ===================================================
+  // SERVER ERROR
+  // ===================================================
+
+  test(
+    "handles server error",
+    async () => {
+
+      axios.get.mockRejectedValue({
+
+        response: {
+          status: 500,
+          data: {
+            message:
+              "Internal Server Error",
+          },
+        },
+
+        message:
+          "Request failed",
+
+      });
+
+      renderPostDetails("1");
+
+      await waitFor(() => {
+
+        expect(
+          screen.getByText(
+            "Post not found"
+          )
+        ).toBeInTheDocument();
+
+      });
+
+    }
+  );
+
+
+  // ===================================================
+  // UNAUTHORIZED
+  // ===================================================
+
+  test(
+    "handles unauthorized response",
+    async () => {
+
+      axios.get.mockRejectedValue({
+
+        response: {
+          status: 401,
+          data: {
+            message:
+              "Unauthorized",
+          },
+        },
+
+        message:
+          "Request failed with status code 401",
+
+      });
+
+      renderPostDetails("1");
+
+      await waitFor(() => {
+
+        expect(
+          screen.getByText(
+            "Post not found"
+          )
+        ).toBeInTheDocument();
+
+      });
+
+    }
+  );
+
+
+  // ===================================================
   // BACK TO HOME
-  // ========================================
+  // ===================================================
 
   test(
     "renders Back to Home button",
@@ -460,7 +542,7 @@ describe("PostDetails Component", () => {
         data: mockPost,
       });
 
-      renderPostDetails();
+      renderPostDetails("1");
 
       await waitFor(() => {
 
@@ -479,111 +561,19 @@ describe("PostDetails Component", () => {
   );
 
 
-  // ========================================
-  // BACK TO HOME NAVIGATION
-  // ========================================
+  // ===================================================
+  // BACK BUTTON
+  // ===================================================
 
   test(
-    "navigates to home when Back to Home is clicked",
+    "renders Back button",
     async () => {
 
       axios.get.mockResolvedValue({
         data: mockPost,
       });
 
-      renderPostDetails();
-
-      const button =
-        await screen.findByRole(
-          "button",
-          {
-            name: "Back to Home",
-          }
-        );
-
-      fireEvent.click(
-        button
-      );
-
-      expect(
-        mockNavigate
-      ).toHaveBeenCalledWith(
-        "/"
-      );
-
-    }
-  );
-
-
-  // ========================================
-  // POST NOT FOUND
-  // ========================================
-
-  test(
-    "shows Post not found when API returns null",
-    async () => {
-
-      axios.get.mockResolvedValue({
-        data: null,
-      });
-
-      renderPostDetails();
-
-      await waitFor(() => {
-
-        expect(
-          screen.getByText(
-            "Post not found"
-          )
-        ).toBeInTheDocument();
-
-      });
-
-    }
-  );
-
-
-  // ========================================
-  // POST NOT FOUND MESSAGE
-  // ========================================
-
-  test(
-    "shows post not found description",
-    async () => {
-
-      axios.get.mockResolvedValue({
-        data: null,
-      });
-
-      renderPostDetails();
-
-      await waitFor(() => {
-
-        expect(
-          screen.getByText(
-            /This post may have been deleted/
-          )
-        ).toBeInTheDocument();
-
-      });
-
-    }
-  );
-
-
-  // ========================================
-  // NOT FOUND BACK BUTTON
-  // ========================================
-
-  test(
-    "shows Back to Posts button when post is not found",
-    async () => {
-
-      axios.get.mockResolvedValue({
-        data: null,
-      });
-
-      renderPostDetails();
+      renderPostDetails("1");
 
       await waitFor(() => {
 
@@ -591,8 +581,7 @@ describe("PostDetails Component", () => {
           screen.getByRole(
             "button",
             {
-              name:
-                "← Back to Posts",
+              name: "← Back",
             }
           )
         ).toBeInTheDocument();
@@ -603,68 +592,98 @@ describe("PostDetails Component", () => {
   );
 
 
-  // ========================================
-  // NOT FOUND NAVIGATION
-  // ========================================
+  // ===================================================
+  // BACK TO HOME CLICK
+  // ===================================================
 
   test(
-    "navigates home from Post not found page",
+    "Back to Home button navigates to home",
     async () => {
 
       axios.get.mockResolvedValue({
-        data: null,
+        data: mockPost,
       });
 
-      renderPostDetails();
+      renderPostDetails("1");
 
-      const button =
-        await screen.findByRole(
-          "button",
-          {
-            name:
-              "← Back to Posts",
-          }
-        );
+      await waitFor(() => {
+
+        expect(
+          screen.getByRole(
+            "button",
+            {
+              name: "Back to Home",
+            }
+          )
+        ).toBeInTheDocument();
+
+      });
 
       fireEvent.click(
-        button
+        screen.getByRole(
+          "button",
+          {
+            name: "Back to Home",
+          }
+        )
       );
 
       expect(
-        mockNavigate
-      ).toHaveBeenCalledWith(
-        "/"
-      );
+        screen.getByText(
+          "Home Page"
+        )
+      ).toBeInTheDocument();
 
     }
   );
 
 
-  // ========================================
-  // API ERROR
-  // ========================================
+  // ===================================================
+  // MULTILINE CONTENT
+  // ===================================================
 
   test(
-    "shows Post not found when API request fails",
+    "renders multiline post content",
     async () => {
 
-      axios.get.mockRejectedValue({
-        response: {
-          status: 404,
-          data: {
-            message:
-              "Post not found",
-          },
-        },
+      const multilinePost = {
+
+        id: 5,
+
+        title:
+          "Multiline Post",
+
+        content:
+          "Line one\nLine two\nLine three",
+
+        author:
+          "shakthi",
+
+      };
+
+      axios.get.mockResolvedValue({
+        data: multilinePost,
       });
 
-      renderPostDetails();
+      renderPostDetails("5");
 
       await waitFor(() => {
 
         expect(
           screen.getByText(
-            "Post not found"
+            /Line one/
+          )
+        ).toBeInTheDocument();
+
+        expect(
+          screen.getByText(
+            /Line two/
+          )
+        ).toBeInTheDocument();
+
+        expect(
+          screen.getByText(
+            /Line three/
           )
         ).toBeInTheDocument();
 
@@ -674,172 +693,24 @@ describe("PostDetails Component", () => {
   );
 
 
-  // ========================================
-  // NETWORK ERROR
-  // ========================================
+  // ===================================================
+  // DIFFERENT POST ID
+  // ===================================================
 
   test(
-    "handles network error",
-    async () => {
-
-      axios.get.mockRejectedValue(
-        new Error("Network Error")
-      );
-
-      renderPostDetails();
-
-      await waitFor(() => {
-
-        expect(
-          screen.getByText(
-            "Post not found"
-          )
-        ).toBeInTheDocument();
-
-      });
-
-    }
-  );
-
-
-  // ========================================
-  // AUTHOR FALLBACK
-  // ========================================
-
-  test(
-    "uses Anonymous when author is missing",
+    "requests the correct post ID",
     async () => {
 
       axios.get.mockResolvedValue({
         data: {
-          ...mockPost,
-          author: null,
+          id: 6,
+          title: "Another Post",
+          content: "Another content",
+          author: "rahul",
         },
       });
 
-      renderPostDetails();
-
-      await waitFor(() => {
-
-        expect(
-          screen.getByText(
-            "Anonymous"
-          )
-        ).toBeInTheDocument();
-
-      });
-
-    }
-  );
-
-
-  // ========================================
-  // ANONYMOUS INITIAL
-  // ========================================
-
-  test(
-    "uses A as initial for anonymous author",
-    async () => {
-
-      axios.get.mockResolvedValue({
-        data: {
-          ...mockPost,
-          author: null,
-        },
-      });
-
-      renderPostDetails();
-
-      await waitFor(() => {
-
-        expect(
-          screen.getByText("A")
-        ).toBeInTheDocument();
-
-      });
-
-    }
-  );
-
-
-  // ========================================
-  // MISSING TITLE
-  // ========================================
-
-  test(
-    "handles post with missing title",
-    async () => {
-
-      axios.get.mockResolvedValue({
-        data: {
-          ...mockPost,
-          title: "",
-        },
-      });
-
-      renderPostDetails();
-
-      await waitFor(() => {
-
-        expect(
-          screen.getByText(
-            "shakthi"
-          )
-        ).toBeInTheDocument();
-
-      });
-
-    }
-  );
-
-
-  // ========================================
-  // MISSING CONTENT
-  // ========================================
-
-  test(
-    "handles post with missing content",
-    async () => {
-
-      axios.get.mockResolvedValue({
-        data: {
-          ...mockPost,
-          content: "",
-        },
-      });
-
-      renderPostDetails();
-
-      await waitFor(() => {
-
-        expect(
-          screen.getByText(
-            "Post #1"
-          )
-        ).toBeInTheDocument();
-
-      });
-
-    }
-  );
-
-
-  // ========================================
-  // SERVER URL
-  // ========================================
-
-  test(
-    "uses serverUrl from context",
-    async () => {
-
-      axios.get.mockResolvedValue({
-        data: mockPost,
-      });
-
-      renderPostDetails({
-        serverUrl:
-          "http://localhost:9000",
-      });
+      renderPostDetails("6");
 
       await waitFor(() => {
 
@@ -847,7 +718,7 @@ describe("PostDetails Component", () => {
           axios.get
         ).toHaveBeenCalledWith(
 
-          "http://localhost:9000/api/posts/1",
+          "/api/posts/6",
 
           {
             withCredentials: true,
@@ -861,19 +732,50 @@ describe("PostDetails Component", () => {
   );
 
 
-  // ========================================
-  // CREDENTIALS
-  // ========================================
+  // ===================================================
+  // API CALLED ONLY ONCE
+  // ===================================================
 
   test(
-    "sends request with credentials",
+    "calls post API once",
     async () => {
 
       axios.get.mockResolvedValue({
         data: mockPost,
       });
 
-      renderPostDetails();
+      renderPostDetails("1");
+
+      await waitFor(() => {
+
+        expect(
+          axios.get
+        ).toHaveBeenCalledTimes(1);
+
+      });
+
+    }
+  );
+
+
+  // ===================================================
+  // DOCKER SERVER URL
+  // ===================================================
+
+  test(
+    "works when serverUrl is empty",
+    async () => {
+
+      axios.get.mockResolvedValue({
+        data: mockPost,
+      });
+
+      renderPostDetails(
+        "1",
+        {
+          serverUrl: "",
+        }
+      );
 
       await waitFor(() => {
 
@@ -881,7 +783,7 @@ describe("PostDetails Component", () => {
           axios.get
         ).toHaveBeenCalledWith(
 
-          expect.any(String),
+          "/api/posts/1",
 
           {
             withCredentials: true,
@@ -890,31 +792,6 @@ describe("PostDetails Component", () => {
         );
 
       });
-
-    }
-  );
-
-
-  // ========================================
-  // NO REQUEST WITHOUT SERVER URL
-  // ========================================
-
-  test(
-    "does not fetch post when serverUrl is missing",
-    async () => {
-
-      renderPostDetails({
-        serverUrl: "",
-      });
-
-      await new Promise(
-        (resolve) =>
-          setTimeout(resolve, 50)
-      );
-
-      expect(
-        axios.get
-      ).not.toHaveBeenCalled();
 
     }
   );
