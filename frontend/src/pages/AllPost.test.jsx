@@ -14,7 +14,6 @@ import {
 
 import {
   MemoryRouter,
-  useLocation,
 } from "react-router-dom";
 
 import AllPost from "./AllPost";
@@ -38,17 +37,7 @@ vi.mock("axios", () => ({
 
 
 // ==========================================
-// MOCK POST COMPONENT
-// ==========================================
-//
-// AllPost does not currently use the Post
-// component. It renders the post cards itself.
-// So no Post mock is required.
-//
-
-
-// ==========================================
-// MOCK CONTEXT
+// RENDER HELPER
 // ==========================================
 
 const renderAllPost = (
@@ -57,12 +46,12 @@ const renderAllPost = (
 ) => {
 
   const defaultContext = {
-    serverUrl: "http://localhost:8083",
+    // Docker + Nginx uses same-origin API
+    serverUrl: "",
     ...contextValue,
   };
 
   return render(
-
     <MemoryRouter
       initialEntries={[initialPath]}
     >
@@ -76,7 +65,6 @@ const renderAllPost = (
       </userDataContext.Provider>
 
     </MemoryRouter>
-
   );
 };
 
@@ -170,7 +158,7 @@ describe("AllPost Component", () => {
           axios.get
         ).toHaveBeenCalledWith(
 
-          "http://localhost:8083/api/posts",
+          "/api/posts",
 
           {
             withCredentials: true,
@@ -364,14 +352,6 @@ describe("AllPost Component", () => {
 
       readMoreButtons[0].click();
 
-      // React Router navigation is verified
-      // by checking the current location.
-      //
-      // Since MemoryRouter does not expose
-      // location directly, this test confirms
-      // that the button is clickable without
-      // throwing an error.
-
       expect(
         readMoreButtons[0]
       ).toBeDefined();
@@ -381,7 +361,7 @@ describe("AllPost Component", () => {
 
 
   // ========================================
-  // SEARCH
+  // SEARCH API
   // ========================================
 
   test(
@@ -410,7 +390,7 @@ describe("AllPost Component", () => {
           axios.get
         ).toHaveBeenCalledWith(
 
-          "http://localhost:8083/api/posts/search?keyword=java",
+          "/api/posts/search?keyword=java",
 
           {
             withCredentials: true,
@@ -496,7 +476,7 @@ describe("AllPost Component", () => {
           axios.get
         ).toHaveBeenCalledWith(
 
-          "http://localhost:8083/api/posts/search?keyword=Spring%20Boot",
+          "/api/posts/search?keyword=Spring%20Boot",
 
           {
             withCredentials: true,
