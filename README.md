@@ -1,8 +1,16 @@
 # 📝 SparkNote — Share Your Stories
 
-SparkNote is a full-stack blogging platform where users can create, manage, search, and read blog posts.
+SparkNote is a full-stack blogging platform built to learn and implement
+**Spring Boot, REST APIs, Spring Security, JWT authentication, React,
+MySQL, Maven, Jenkins, Docker, and Docker Compose** in a real-world
+application workflow.
 
-The application provides secure authentication using **JWT stored in HttpOnly cookies** and protects user-specific operations such as creating, editing, and deleting posts.
+Users can register, log in, create, manage, search, and read blog posts
+through a responsive React frontend connected to a Spring Boot backend.
+
+The project also includes a **Jenkins CI/CD pipeline** for the Maven-based
+Spring Boot application and uses **Docker Compose** to run the frontend and
+backend as containers.
 
 ---
 
@@ -114,6 +122,26 @@ The **My Posts** section displays only the logged-in user's posts.
 - IntelliJ IDEA
 - Maven
 
+## Testing
+
+- JUnit
+- Mockito
+- JaCoCo
+
+## DevOps
+
+- Git
+- GitHub
+- Jenkins
+- Docker
+- Docker Compose
+- Nginx
+
+##  Development Tools
+
+- VS Code
+- IntelliJ IDEA
+- Maven
 ---
 
 # 🏗️ Project Architecture
@@ -588,11 +616,11 @@ server.port=8083
 ## 1. Clone Repository
 
 ```bash
-git clone https://github.com/Shakthivelk24/Blogging-website-using-Spring-Boot.git
+git clone https://github.com/Shakthivelk24/sparknote-Spring-Boot.git
 ```
 
 ```bash
-cd SparkNote
+cd sparknote-Spring-Boot
 ```
 
 ---
@@ -778,10 +806,151 @@ Allow     403
 [✓] Delete own post
 [✓] Prevent editing another user's post
 [✓] Prevent deleting another user's post
+[✓] Maven build
+[✓] Maven tests
+[✓] JaCoCo coverage
+[✓] Docker image build
+[✓] Docker Compose deployment
+[✓] Jenkins pipeline
 ```
 
 ---
 
+# 🐳 Docker
+
+SparkNote is containerized using **Docker**.
+
+The application contains two main containers:
+
+```text
+┌──────────────────────────────┐
+│       Docker Compose         │
+│                              │
+│  ┌────────────────────────┐  │
+│  │      Frontend          │  │
+│  │   React + Nginx        │  │
+│  │       Port 80          │  │
+│  └───────────┬────────────┘  │
+│              │               │
+│              │ /api          │
+│              ▼               │
+│  ┌────────────────────────┐  │
+│  │       Backend          │  │
+│  │     Spring Boot        │  │
+│  │      Port 8083         │  │
+│  └───────────┬────────────┘  │
+│              │               │
+└──────────────┼───────────────┘
+               │
+               ▼
+        MySQL Database
+```
+# 📊 DevOps Workflow
+
+The complete development and deployment workflow is:
+
+```text
+             Developer
+                 │
+                 ▼
+              GitHub
+                 │
+                 ▼
+              Jenkins
+                 │
+        ┌────────┴────────┐
+        │                 │
+        ▼                 ▼
+     Maven              Tests
+     Build                │
+        │                 ▼
+        └──────────►    JaCoCo
+                         │
+                         ▼
+                  Docker Build
+                         │
+              ┌──────────┴──────────┐
+              │                     │
+              ▼                     ▼
+       Backend Image        Frontend Image
+              │                     │
+              └──────────┬──────────┘
+                         ▼
+                  Docker Compose
+                         │
+                         ▼
+                    Application
+```
+# 📚 Learning Outcomes
+
+This project was developed as a hands-on learning project to understand
+how a **Spring Boot application works from development to deployment**.
+
+### 🌱 Spring Boot
+
+- 🔗 REST API development
+- 🎯 Controllers
+- ⚙️ Services
+- 🗄️ Repositories
+- 💉 Dependency Injection
+- 🗃️ Spring Data JPA
+- ⚙️ Application configuration
+
+### 🛡️ Spring Security
+
+- 🔐 Authentication
+- 🔑 Authorization
+- 🎫 JWT
+- 🧩 Security filters
+- 🍪 HttpOnly cookies
+- 🔒 Password hashing
+- 🚧 Protected endpoints
+
+### 📦 Maven
+
+- 📚 Dependency management
+- 🔄 Project lifecycle
+- ⚙️ Build automation
+- 🧪 Test execution
+- ✅ Verification
+
+### 🧪 Testing
+
+- 🧪 Unit testing
+- 🎯 Controller testing
+- 🎭 Mockito
+- 🔬 JUnit
+- 📊 Code coverage with JaCoCo
+
+### 🚀 DevOps
+
+- 🤖 Jenkins pipeline creation
+- 📦 Maven CI workflow
+- 🐳 Docker image creation
+- 📦 Docker containerization
+- 🐳 Docker Compose
+- 🌐 Nginx reverse proxy
+- 🔗 Multi-container networking
+
+The project helped me understand the complete development and deployment flow:
+
+```text
+Code
+  ↓
+Maven
+  ↓
+Testing
+  ↓
+JaCoCo
+  ↓
+Jenkins
+  ↓
+Docker
+  ↓
+Docker Compose
+  ↓
+Running Application
+```
 # 🚀 Future Improvements
 
 - Image upload
@@ -796,8 +965,6 @@ Allow     403
 - Forgot password
 - Admin dashboard
 - Role-based authorization
-- Docker deployment
-- CI/CD pipeline
 - Cloud deployment
 
 ---
@@ -819,3 +986,5 @@ If you find this project useful, consider giving the repository a ⭐ on GitHub.
 # 📄 License
 
 This project is created for educational and portfolio purposes.
+
+
